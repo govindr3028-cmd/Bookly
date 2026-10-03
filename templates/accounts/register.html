@@ -1,0 +1,98 @@
+{% extends "accounts/auth_page.html" %}
+
+{% block auth_container_class %}auth-container-wide{% endblock %}
+{% block auth_icon %}bi bi-person-plus-fill{% endblock %}
+{% block auth_title %}Create Your Account{% endblock %}
+{% block auth_subtitle %}Join Bookly to borrow books, track reading, and explore titles{% endblock %}
+
+{% block form_fields %}
+<div class="row g-3">
+  <div class="col-12 col-md-6">
+    <div class="mb-1">
+      <label for="{{ form.full_name.id_for_label }}" class="auth-label">
+        <i class="bi bi-person text-primary"></i>
+        <span>Full name</span>
+      </label>
+      {{ form.full_name }}
+      {% for e in form.full_name.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="mb-1">
+      <label for="{{ form.username.id_for_label }}" class="auth-label">
+        <i class="bi bi-at text-primary"></i>
+        <span>Username</span>
+      </label>
+      {{ form.username }}
+      {% for e in form.username.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      {% if form.username.help_text %}<div class="form-text">{{ form.username.help_text }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="mb-1">
+      <label for="{{ form.email.id_for_label }}" class="auth-label">
+        <i class="bi bi-envelope text-primary"></i>
+        <span>Email address</span>
+      </label>
+      {{ form.email }}
+      {% for e in form.email.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="mb-1">
+      <label for="{{ form.mobile.id_for_label }}" class="auth-label">
+        <i class="bi bi-telephone text-primary"></i>
+        <span>Mobile number</span>
+      </label>
+      {{ form.mobile }}
+      {% for e in form.mobile.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      {% if form.mobile.help_text %}<div class="form-text">{{ form.mobile.help_text }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="mb-1">
+      <label for="{{ form.password.id_for_label }}" class="auth-label">
+        <i class="bi bi-lock text-primary"></i>
+        <span>Password</span>
+      </label>
+      <div class="password-field-wrapper">
+        {{ form.password }}
+        <button type="button" class="password-toggle-btn" data-target="{{ form.password.id_for_label }}" title="Toggle password visibility" aria-label="Toggle password visibility">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+      {% for e in form.password.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      {% if form.password.help_text %}<div class="form-text">{{ form.password.help_text }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="mb-1">
+      <label for="{{ form.confirm_password.id_for_label }}" class="auth-label">
+        <i class="bi bi-shield-check text-primary"></i>
+        <span>Confirm password</span>
+      </label>
+      <div class="password-field-wrapper">
+        {{ form.confirm_password }}
+        <button type="button" class="password-toggle-btn" data-target="{{ form.confirm_password.id_for_label }}" title="Toggle password visibility" aria-label="Toggle password visibility">
+          <i class="bi bi-eye"></i>
+        </button>
+      </div>
+      {% for e in form.confirm_password.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block after_form %}
+<div class="auth-switch-box text-center">
+  <span class="text-secondary">Already a member?</span>
+  <a href="{% url 'login' %}" class="ms-1">Log in</a>
+</div>
+{% endblock %}
+
+{% block auth_quote %}Today a reader, tomorrow a leader.{% endblock %}

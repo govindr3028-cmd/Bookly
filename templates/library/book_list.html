@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% block title %}Books Catalog{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill">
+        <i class="bi bi-book-half me-1"></i>Library Collection
+      </span>
+      {% if page_obj.paginator.count %}
+      <span class="badge bg-white text-secondary border px-2.5 py-1 rounded-pill">
+        {{ page_obj.paginator.count }} titles available
+      </span>
+      {% endif %}
+    </div>
+    <h1 class="h2 fw-bold text-dark mb-1">Library Catalog</h1>
+    <p class="text-secondary mb-0">Browse through our physical collection, check availability, and borrow titles instantly.</p>
+  </div>
+  {% if user.is_staff %}
+  <a href="{% url 'book_create' %}" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm">
+    <i class="bi bi-plus-lg"></i>
+    <span>Add New Book</span>
+  </a>
+  {% endif %}
+</div>
+
+<!-- Refined Search & Filter Toolbar -->
+<form method="get" class="card shadow-sm border-0 mb-4 catalog-filter-card">
+  <div class="card-body p-3.5">
+    <div class="row g-2.5 align-items-end">
+      <!-- Search Input -->
+      <div class="col-12 col-md-5">
+        <label class="form-label small fw-semibold text-secondary mb-1" for="q">
+          <i class="bi bi-search text-primary me-1"></i>Search Books
+        </label>
+        <div class="search-input-wrapper">
+          <input type="search" id="q" name="q" value="{{ q }}" class="form-control" placeholder="Search by title, author, or ISBN...">
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="col-6 col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1" for="category">
+          <i class="bi bi-tag text-primary me-1"></i>Category
+        </label>
+        <select id="category" name="category" class="form-select">
+          <option value="">All Categories</option>
+          {% for value, label in categories %}
+          <option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Available Only Toggle Switch -->
+      <div class="col-6 col-md-2">
+        <div class="form-check form-switch mb-2 pt-md-2">
+          <input class="form-check-input" type="checkbox" role="switch" name="available" value="1" id="available" {% if only_available %}checked{% endif %}>
+          <label class="form-check-label small fw-semibold text-secondary" for="available">Available only</label>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-12 col-md-2 d-flex gap-2">
+        <button class="btn btn-primary flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1.5 shadow-sm" type="submit">
+          <i class="bi bi-search"></i>
+          <span>Search</span>
+        </button>
+        <a class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" href="{% url 'book_list' %}" title="Reset filters">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Active Filters Badge Summary (if filters active) -->
+    {% if q or category or only_available %}
+    <div class="d-flex align-items-center gap-2 mt-3 pt-2.5 border-top border-light flex-wrap small">
+      <span class="text-secondary fw-semibold">Active filters:</span>
+      {% if q %}
+      <span class="badge bg-light text-dark border">
+        Query: “{{ q }}”
+      </span>
+      {% endif %}
+      {% if category %}
+      <span class="badge bg-light text-dark border">
+        Category: {{ category|title }}
+      </span>
+      {% endif %}
+      {% if only_available %}
+      <span class="badge bg-success-subtle text-success border border-success-subtle">
+        Available copies only
+      </span>
+      {% endif %}
+      <a href="{% url 'book_list' %}" class="text-danger ms-1 text-decoration-none small fw-semibold">
+        <i class="bi bi-x-circle me-0.5"></i>Clear all
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Books Grid -->
+{% if page_obj %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3.5 mb-4">
+  {% for book in page_obj %}
+  <div class="col">
+    <div class="card h-100 shadow-sm border-0 book-card category-{{ book.category }}">
+      <!-- Category Color Accent Ribbon on Top -->
+      <div class="book-card-accent"></div>
+
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-2.5">
+          <span class="badge badge-category category-pill-{{ book.category }}">
+            {{ book.get_category_display }}
+          </span>
+          <span class="badge {% if book.is_available %}bg-success-subtle text-success border border-success-subtle{% else %}bg-danger-subtle text-danger border border-danger-subtle{% endif %} rounded-pill px-2.5 py-1">
+            {% if book.is_available %}
+              <i class="bi bi-check-circle-fill me-1"></i>{{ book.available_copies }} of {{ book.total_copies }} in stock
+            {% else %}
+              <i class="bi bi-clock-fill me-1"></i>All copies out
+            {% endif %}
+          </span>
+        </div>
+
+        <h2 class="h5 card-title fw-bold mb-1.5">
+          <a href="{% url 'book_detail' book.pk %}" class="text-dark text-decoration-none hover-primary">
+            {{ book.title }}
+          </a>
+        </h2>
+        <p class="text-secondary small mb-2.5">
+          <i class="bi bi-person text-muted me-1"></i>{{ book.author }}
+        </p>
+
+        <div class="mt-auto pt-2 d-flex justify-content-between align-items-center">
+          <span class="isbn-chip">
+            ISBN {{ book.isbn }}
+          </span>
+          <span class="small text-muted">
+            {{ book.total_copies }} {% if book.total_copies == 1 %}copy{% else %}copies{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-footer bg-white border-top border-light p-3 d-flex gap-2 flex-wrap align-items-center justify-content-between">
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'borrow_book' book.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1.5 shadow-xs" type="submit" {% if not book.is_available %}disabled{% endif %}>
+              <i class="bi bi-bookmark-plus"></i>
+              <span>Borrow</span>
+            </button>
+          </form>
+          <a href="{% url 'book_detail' book.pk %}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+            <i class="bi bi-info-circle"></i>
+            <span>Details</span>
+          </a>
+        </div>
+
+        {% if user.is_staff %}
+        <div class="d-flex gap-1.5 ms-auto">
+          <a href="{% url 'book_update' book.pk %}" class="btn btn-sm btn-light border text-secondary" title="Edit book">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <a href="{% url 'book_delete' book.pk %}" class="btn btn-sm btn-light border text-danger" title="Delete book">
+            <i class="bi bi-trash"></i>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination component -->
+{% include "library/_pagination.html" %}
+
+{% else %}
+<!-- Professional Empty Search State -->
+<div class="card shadow-sm border-0 my-4 text-center py-5 px-4">
+  <div class="empty-state-icon-box mx-auto">
+    <i class="bi bi-search"></i>
+  </div>
+  <h3 class="h5 fw-bold text-dark mb-2">No Books Match Your Search</h3>
+  <p class="text-secondary mx-auto mb-3" style="max-width: 440px;">
+    {% if q or category or only_available %}
+    We couldn't find any books matching your active filters. Try clearing your search query or choosing a different category.
+    {% else %}
+    No books have been added to the catalog yet. Staff members can add new titles at any time.
+    {% endif %}
+  </p>
+  <div>
+    {% if q or category or only_available %}
+    <a href="{% url 'book_list' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+      <i class="bi bi-arrow-counterclockwise"></i>
+      <span>Clear All Filters</span>
+    </a>
+    {% elif user.is_staff %}
+    <a href="{% url 'book_create' %}" class="btn btn-primary d-inline-flex align-items-center gap-2 shadow-sm">
+      <i class="bi bi-plus-lg"></i>
+      <span>Add First Book</span>
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

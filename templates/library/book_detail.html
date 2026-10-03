@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} · Catalog{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{% url 'book_list' %}" class="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1.5">
+    <i class="bi bi-arrow-left"></i>
+    <span>Back to Catalog</span>
+  </a>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-8">
+    <div class="card shadow-sm border-0 mb-4 book-detail-card">
+      <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+          <span class="badge badge-category category-pill-{{ book.category }}">
+            {{ book.get_category_display }}
+          </span>
+          <span class="badge {% if book.is_available %}bg-success-subtle text-success border border-success-subtle{% else %}bg-danger-subtle text-danger border border-danger-subtle{% endif %} rounded-pill px-3 py-1">
+            {% if book.is_available %}
+              <i class="bi bi-check-circle-fill me-1"></i>{{ book.available_copies }} of {{ book.total_copies }} available
+            {% else %}
+              <i class="bi bi-clock-fill me-1"></i>Unavailable — all copies borrowed
+            {% endif %}
+          </span>
+        </div>
+
+        <h1 class="h2 fw-bold text-dark mb-2">{{ book.title }}</h1>
+        <p class="text-secondary fs-5 mb-4">
+          <i class="bi bi-feather text-primary me-1"></i>by <strong class="text-dark">{{ book.author }}</strong>
+        </p>
+
+        <div class="p-3.5 bg-light rounded-3 mb-4">
+          <div class="row g-3 small">
+            <div class="col-sm-4">
+              <span class="text-secondary d-block">ISBN</span>
+              <span class="fw-semibold text-dark font-monospace">{{ book.isbn }}</span>
+            </div>
+            <div class="col-sm-4">
+              <span class="text-secondary d-block">Total Inventory</span>
+              <span class="fw-semibold text-dark">{{ book.total_copies }} {% if book.total_copies == 1 %}copy{% else %}copies{% endif %}</span>
+            </div>
+            <div class="col-sm-4">
+              <span class="text-secondary d-block">Shelf Availability</span>
+              <span class="fw-semibold {% if book.is_available %}text-success{% else %}text-danger{% endif %}">
+                {{ book.available_copies }} available right now
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2.5 flex-wrap align-items-center">
+          <form method="post" action="{% url 'borrow_book' book.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-primary px-4 py-2 d-inline-flex align-items-center gap-2 shadow-sm" type="submit" {% if not book.is_available %}disabled{% endif %}>
+              <i class="bi bi-bookmark-plus"></i>
+              <span>Borrow This Book</span>
+            </button>
+          </form>
+
+          {% if user.is_staff %}
+          <a href="{% url 'loan_create' %}?book={{ book.pk }}" class="btn btn-outline-primary d-inline-flex align-items-center gap-1.5">
+            <i class="bi bi-person-plus"></i>
+            <span>Issue to Member</span>
+          </a>
+          <a href="{% url 'book_update' book.pk %}" class="btn btn-light border text-secondary d-inline-flex align-items-center gap-1.5">
+            <i class="bi bi-pencil"></i>
+            <span>Edit</span>
+          </a>
+          <a href="{% url 'book_delete' book.pk %}" class="btn btn-light border text-danger d-inline-flex align-items-center gap-1.5">
+            <i class="bi bi-trash"></i>
+            <span>Delete</span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-4">
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-white py-3 px-4">
+        <h3 class="h6 fw-bold mb-0 text-dark">Loan Information</h3>
+      </div>
+      <div class="card-body p-4 small">
+        <div class="d-flex align-items-start gap-2.5 mb-3">
+          <i class="bi bi-calendar3 text-primary fs-5 mt-0.5"></i>
+          <div>
+            <div class="fw-semibold text-dark">14-Day Lending Period</div>
+            <div class="text-secondary">Books must be returned or renewed within 14 days of checkout.</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-start gap-2.5">
+          <i class="bi bi-shield-check text-primary fs-5 mt-0.5"></i>
+          <div>
+            <div class="fw-semibold text-dark">Single Copy Policy</div>
+            <div class="text-secondary">Each member may borrow 1 copy of this title at a time.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if user.is_staff %}
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 px-4 fw-bold text-dark">
+        Active Loans for This Title
+      </div>
+      {% if open_loans %}
+      <ul class="list-group list-group-flush">
+        {% for loan in open_loans %}
+        <li class="list-group-item px-4 py-3 d-flex justify-content-between align-items-center">
+          <div>
+            <a href="{% url 'loan_detail' loan.pk %}" class="fw-semibold text-dark text-decoration-none">
+              {{ loan.member.first_name|default:loan.member.username }}
+            </a>
+            <div class="small text-secondary">due {{ loan.due_date|date:"d M Y" }}</div>
+          </div>
+          <span class="badge text-bg-{{ loan.badge_class }}">{{ loan.status }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="card-body p-4 text-secondary small">
+        All copies are currently available on shelf.
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

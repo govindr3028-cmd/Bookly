@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %}auth-page-body{% endblock %}
+{% block navbar_class %}auth-navbar{% endblock %}
+{% block footer_class %}auth-footer{% endblock %}
+{% block main_class %}container auth-main-container flex-grow-1{% endblock %}
+
+{% block content %}
+<div class="{% block auth_container_class %}auth-container{% endblock %}">
+  
+  <div class="auth-card">
+    <div class="auth-card-accent"></div>
+    
+    <div class="card-body p-4 p-sm-5">
+      <div class="text-center mb-4">
+        <div class="auth-icon-badge">
+          <i class="{% block auth_icon %}bi bi-book-half{% endblock %}"></i>
+        </div>
+        <h1 class="auth-title">{% block auth_title %}{{ title }}{% endblock %}</h1>
+        <p class="auth-subtitle mb-0">{% block auth_subtitle %}Your gateway to the Bookly library collection{% endblock %}</p>
+      </div>
+
+      {% block intro %}{% endblock %}
+
+      <form method="post" novalidate class="auth-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger d-flex align-items-start gap-2 mb-3">
+          <i class="bi bi-exclamation-octagon-fill text-danger fs-5 flex-shrink-0 mt-1"></i>
+          <div>
+            {% for e in form.non_field_errors %}
+              <div>{{ e }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% block form_fields %}
+        {% for field in form %}
+        <div class="mb-3">
+          <label for="{{ field.id_for_label }}" class="auth-label">{{ field.label }}</label>
+          {{ field }}
+          {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+          {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        {% endblock %}
+
+        <div class="d-grid mt-4">
+          <button type="submit" class="btn btn-primary auth-submit-btn">
+            <span>{{ submit_label|default:"Continue" }}</span>
+            <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </form>
+
+      {% block after_form %}{% endblock %}
+    </div>
+  </div>
+
+  <div class="text-center">
+    <div class="auth-quote-pill">
+      <i class="bi bi-quote"></i>
+      <span>{% block auth_quote %}A room without books is like a body without a soul.{% endblock %}</span>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Optional password visibility toggle for any password inputs with .password-toggle-btn
+  document.querySelectorAll('.password-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      const icon = this.querySelector('i');
+      if (input) {
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) {
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+          }
+        } else {
+          input.type = 'password';
+          if (icon) {
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

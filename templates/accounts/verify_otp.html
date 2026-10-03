@@ -1,0 +1,43 @@
+{% extends "accounts/auth_page.html" %}
+
+{% block auth_icon %}bi bi-shield-lock{% endblock %}
+{% block auth_title %}Verify Your Email{% endblock %}
+{% block auth_subtitle %}We've sent a 6-digit verification code to complete your setup{% endblock %}
+
+{% block intro %}
+<div class="alert alert-info border-0 d-flex align-items-center gap-2 mb-4" style="background: rgba(29, 78, 95, 0.08); color: #14323d;">
+  <i class="bi bi-envelope-check text-primary fs-5"></i>
+  <div>Enter the code sent to <strong>{{ email }}</strong>. It expires in 10 minutes.</div>
+</div>
+{% endblock %}
+
+{% block form_fields %}
+{% for field in form %}
+<div class="mb-3 text-center">
+  <label for="{{ field.id_for_label }}" class="auth-label justify-content-center">
+    <i class="bi bi-key text-primary"></i>
+    <span>{{ field.label }}</span>
+  </label>
+  <div style="max-width: 220px; margin: 0 auto;">
+    {{ field }}
+  </div>
+  {% for e in field.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+  {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block after_form %}
+<div class="auth-switch-box text-center">
+  <form method="post" action="{% url 'resend_otp' %}" class="d-inline-flex align-items-center justify-content-center gap-2 flex-wrap mb-2">
+    {% csrf_token %}
+    <span class="text-secondary">Didn't receive the email?</span>
+    <button type="submit" class="btn btn-link p-0 text-primary fw-semibold text-decoration-none">Resend code</button>
+  </form>
+  <div>
+    <a href="{% url 'login' %}" class="small text-secondary"><i class="bi bi-arrow-left me-1"></i>Back to log in</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block auth_quote %}A book is a dream that you hold in your hand.{% endblock %}

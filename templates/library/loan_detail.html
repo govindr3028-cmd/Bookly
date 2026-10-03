@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Borrowing Record #{{ loan.pk }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{% url 'loan_list' %}" class="btn btn-sm btn-light border text-secondary d-inline-flex align-items-center gap-1.5">
+    <i class="bi bi-arrow-left"></i>
+    <span>Back to Loans</span>
+  </a>
+</div>
+
+<div class="card shadow-sm border-0 mx-auto" style="max-width: 680px;">
+  <div class="card-header bg-white py-3.5 px-4 d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-2">
+      <div class="icon-square-sm bg-primary-subtle text-primary">
+        <i class="bi bi-receipt"></i>
+      </div>
+      <div>
+        <h1 class="h6 fw-bold mb-0 text-dark">Loan Receipt #{{ loan.pk }}</h1>
+        <div class="small text-secondary">Verified borrowing transaction</div>
+      </div>
+    </div>
+    <span class="badge text-bg-{{ loan.badge_class }} rounded-pill px-3 py-1">
+      {{ loan.status }}
+    </span>
+  </div>
+
+  <div class="card-body p-4 p-md-5">
+    <div class="d-flex align-items-start gap-3 pb-4 mb-4 border-bottom">
+      <div class="book-mini-icon fs-4 p-3 bg-primary-subtle text-primary rounded-3">
+        <i class="bi bi-book"></i>
+      </div>
+      <div>
+        <h2 class="h4 fw-bold text-dark mb-1">
+          <a href="{% url 'book_detail' loan.book.pk %}" class="text-dark text-decoration-none hover-primary">
+            {{ loan.book.title }}
+          </a>
+        </h2>
+        <p class="text-secondary small mb-0">by {{ loan.book.author }} · <span class="font-monospace">ISBN {{ loan.book.isbn }}</span></p>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6">
+        <div class="p-3 bg-light rounded-3">
+          <span class="text-secondary small d-block mb-1"><i class="bi bi-person text-primary me-1"></i>Borrower</span>
+          <span class="fw-semibold text-dark">{{ loan.member.first_name|default:loan.member.username }}</span>
+          <span class="text-muted small d-block">@{{ loan.member.username }}</span>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="p-3 bg-light rounded-3">
+          <span class="text-secondary small d-block mb-1"><i class="bi bi-calendar-event text-primary me-1"></i>Borrow Date</span>
+          <span class="fw-semibold text-dark">{{ loan.borrow_date|date:"d M Y" }}</span>
+          <span class="text-muted small d-block">Issued via Bookly System</span>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="p-3 bg-light rounded-3">
+          <span class="text-secondary small d-block mb-1"><i class="bi bi-alarm text-primary me-1"></i>Due Date</span>
+          <span class="fw-semibold {% if loan.is_overdue %}text-danger{% else %}text-dark{% endif %}">
+            {{ loan.due_date|date:"d M Y" }}
+          </span>
+          {% if loan.is_overdue %}
+          <span class="text-danger small d-block fw-semibold"><i class="bi bi-exclamation-circle me-0.5"></i>Overdue</span>
+          {% else %}
+          <span class="text-muted small d-block">14-day loan term</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="p-3 bg-light rounded-3">
+          <span class="text-secondary small d-block mb-1"><i class="bi bi-check2-circle text-primary me-1"></i>Return Date</span>
+          {% if loan.return_date %}
+          <span class="fw-semibold text-success">{{ loan.return_date|date:"d M Y" }}</span>
+          <span class="text-success small d-block">Returned on time</span>
+          {% else %}
+          <span class="fw-semibold text-secondary">Not yet returned</span>
+          <span class="text-muted small d-block">Active in borrower's hands</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if user.is_staff %}
+    <div class="d-flex gap-2 flex-wrap pt-3 border-top">
+      {% if not loan.is_returned %}
+      <form method="post" action="{% url 'loan_return' loan.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-success d-inline-flex align-items-center gap-1.5" type="submit">
+          <i class="bi bi-check2"></i>
+          <span>Mark as Returned</span>
+        </button>
+      </form>
+      {% endif %}
+      <a href="{% url 'loan_update' loan.pk %}" class="btn btn-outline-primary d-inline-flex align-items-center gap-1">
+        <i class="bi bi-pencil"></i>
+        <span>Edit Loan</span>
+      </a>
+      <a href="{% url 'loan_delete' loan.pk %}" class="btn btn-outline-danger d-inline-flex align-items-center gap-1">
+        <i class="bi bi-trash"></i>
+        <span>Delete Record</span>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
